@@ -25,6 +25,11 @@ runs:
         AUTH_PATH: ${{ inputs.path }}
         HOST: ${{ inputs.host }}
       run: |
+        # No-op for non-composer projects (build handles single plugins/themes too).
+        if [ ! -f "${AUTH_PATH}/composer.json" ]; then
+          echo "No composer.json in ${AUTH_PATH}; skipping SatisPress auth."
+          exit 0
+        fi
         # Canonical convention: username = the SatisPress key, password = the project's homepage
         # (protocol stripped). Written locally in the project dir so any composer run there is
         # authenticated. Mirrors what build-for-deployment.sh has always done.
