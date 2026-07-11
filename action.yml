@@ -1,0 +1,32 @@
+name: "Composer SatisPress Auth"
+description: "Configure composer http-basic auth for a SatisPress instance (packages.saucal.com). Single source of truth for composer<->SatisPress credentials across Saucal actions."
+inputs:
+  satis_key:
+    description: "SatisPress key. When empty, this action is a no-op (composer stays unauthenticated)."
+    required: false
+    default: ''
+  path:
+    description: "Project dir containing composer.json. The auth password is derived from its `homepage`, and auth.json is written here (composer reads it when run in this dir)."
+    required: false
+    default: '.'
+  host:
+    description: "SatisPress host to authenticate against."
+    required: false
+    default: 'packages.saucal.com'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Configure SatisPress composer auth
+      if: ${{ inputs.satis_key != '' }}
+      shell: bash
+      env:
+        SATIS_KEY: ${{ inputs.satis_key }}
+        AUTH_PATH: ${{ inputs.path }}
+        HOST: ${{ inputs.host }}
+      run: |
+        # Canonical convention: username = the SatisPress key, password = the project's homepage
+        # (protocol stripped). Written locally in the project dir so any composer run there is
+        # authenticated. Mirrors what build-for-deployment.sh has always done.
+        echo "Configuring composer auth for ${HOST}"
+        ( cd "${AUTH_PATH}" && composer config "http-basic.${HOST}" "${SATIS_KEY}" "$(composer config homepage | sed 's,http[s]\?://,,')" )
