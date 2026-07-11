@@ -1,32 +1,44 @@
 # action-composer-auth
 
-Configure composer HTTP basic auth for a SatisPress instance (`packages.saucal.com`).
+Configure composer HTTP basic auth for a private composer repository.
 
-This is the **single source of truth** for composer ⇄ SatisPress credentials across Saucal
-actions. Any action or workflow that runs composer against private packages should call this
-instead of duplicating the `composer config http-basic …` line.
+Generic wrapper around `composer config http-basic.<domain> <username> <password>` — the single
+source of truth for composer authentication across Saucal actions. SatisPress
+(`packages.saucal.com`) is the default, but it works for any private composer repo.
 
 ## Usage
+
+SatisPress (defaults cover it — just pass the key):
 
 ```yaml
 - uses: saucal/action-composer-auth@v1
   with:
-    satis_key: ${{ secrets.SAUCAL_SATIS_KEY || secrets.SAUCAL_GLOBAL_SATIS_KEY }}
-    path: source          # dir containing composer.json (default: .)
+    username: ${{ secrets.SAUCAL_SATIS_KEY || secrets.SAUCAL_GLOBAL_SATIS_KEY }}
+    path: source        # dir containing composer.json (default: .)
 ```
+
+Any other private repo (pass domain + explicit credentials):
+
+```yaml
+- uses: saucal/action-composer-auth@v1
+  with:
+    domain: composer.example.com
+    username: ${{ secrets.EXAMPLE_USER }}
+    password: ${{ secrets.EXAMPLE_TOKEN }}
+```
+
+Authenticate multiple repos by calling the action once per repo.
 
 ## Inputs
 
 | Input | Default | Description |
 |-------|---------|-------------|
-| `satis_key` | `''` | SatisPress key. Empty ⇒ no-op. |
-| `path` | `.` | Project dir containing `composer.json`. auth.json is written here; the password is derived from the project's `homepage`. |
-| `host` | `packages.saucal.com` | SatisPress host. |
+| `domain` | `packages.saucal.com` | Repository domain — the composer http-basic key. |
+| `username` | `''` | Auth username (SatisPress key). Empty ⇒ no-op. |
+| `password` | `''` | Auth password. Empty ⇒ defaults to the project's `homepage` (protocol stripped), the SatisPress convention. Pass explicitly for other repos. |
+| `path` | `.` | Project dir containing `composer.json`. auth.json is written here. |
 
-## Convention
+## Notes
 
-`username` = the SatisPress key, `password` = the project's `homepage` (protocol stripped).
-Auth is written locally in `path` (`composer config http-basic.<host> …`), so a composer run
-in that directory is authenticated. Composer must be available on the runner.
-
-Requires the `SAUCAL_GLOBAL_SATIS_KEY` org secret to be visible to the consuming repo.
+Auth is written locally in `path`, so a composer run in that directory is authenticated.
+Composer must be available on the runner. No-op if `path` has no `composer.json`.
