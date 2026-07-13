@@ -33,7 +33,7 @@ Authenticate multiple repos by calling the action once per repo.
 
 | Input | Default | Description |
 |-------|---------|-------------|
-| `domain` | `packages.saucal.com` | Repository domain — the composer http-basic key. |
+| `domain` | *(empty)* | Repository domain — the composer http-basic key. Empty ⇒ resolves from the `PACKAGE_SERVER` repo/org variable, then `packages.saucal.com`. |
 | `username` | `''` | Auth username (SatisPress key). Empty ⇒ no-op. |
 | `password` | `''` | Auth password. Empty ⇒ defaults to the project's `homepage` (protocol stripped), the SatisPress convention. Pass explicitly for other repos. |
 | `path` | `.` | Project dir containing `composer.json`. auth.json is written here. |

@@ -2,9 +2,9 @@ name: "Composer HTTP Basic Auth"
 description: "Configure composer http-basic auth for a private composer repository. Generic: SatisPress (packages.saucal.com) is just the default; call once per repo to authenticate others."
 inputs:
   domain:
-    description: "Repository domain to authenticate — the composer http-basic key (e.g. packages.saucal.com)."
+    description: "Repository domain to authenticate — the composer http-basic key. When empty, resolves from the `PACKAGE_SERVER` repo/org variable, then falls back to packages.saucal.com."
     required: false
-    default: 'packages.saucal.com'
+    default: ''
   username:
     description: "Auth username. For SatisPress, the SatisPress key. Empty ⇒ no-op."
     required: false
@@ -25,7 +25,8 @@ runs:
       if: ${{ inputs.username != '' }}
       shell: bash
       env:
-        DOMAIN: ${{ inputs.domain }}
+        # domain: explicit input, else the PACKAGE_SERVER repo/org variable, else SatisPress.
+        DOMAIN: ${{ inputs.domain || vars.PACKAGE_SERVER || 'packages.saucal.com' }}
         USERNAME: ${{ inputs.username }}
         PASSWORD: ${{ inputs.password }}
         AUTH_PATH: ${{ inputs.path }}
