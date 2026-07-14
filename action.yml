@@ -36,6 +36,8 @@ runs:
           echo "No composer.json in ${AUTH_PATH}; skipping composer auth."
           exit 0
         fi
+        # Final safety net: if the domain resolved empty (unset variable / no input), use SatisPress.
+        DOMAIN="${DOMAIN:-packages.saucal.com}"
         # Default the password to the project's homepage (protocol stripped) — the SatisPress
         # convention. Pass `password` explicitly to authenticate any other repo.
         PASS="${PASSWORD}"
