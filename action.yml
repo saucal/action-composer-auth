@@ -36,10 +36,9 @@ runs:
           exit 0
         fi
         # domain: explicit input, else the PACKAGE_SERVER env var (workflows map vars.PACKAGE_SERVER
-        # to it; the maintenance flow exposes `package_server`), else SatisPress. Resolved in bash —
-        # the `vars` context is not available inside composite actions.
+        # to it — composite actions can't read the `vars` context directly), else SatisPress.
         DOMAIN="${INPUT_DOMAIN}"
-        [ -z "${DOMAIN}" ] && DOMAIN="${PACKAGE_SERVER:-${package_server:-packages.saucal.com}}"
+        [ -z "${DOMAIN}" ] && DOMAIN="${PACKAGE_SERVER:-packages.saucal.com}"
         # Default the password to the project's homepage (protocol stripped) — the SatisPress
         # convention. Pass `password` explicitly to authenticate any other repo.
         PASS="${PASSWORD}"
