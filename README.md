@@ -33,7 +33,7 @@ Authenticate multiple repos by calling the action once per repo.
 
 | Input | Default | Description |
 |-------|---------|-------------|
-| `domain` | *(empty)* | Repository domain — the composer http-basic key. Empty ⇒ resolves from the `PACKAGE_SERVER` repo/org variable, then `packages.saucal.com`. |
+| `domain` | *(empty)* | Repository domain — the composer http-basic key. Empty ⇒ resolves from the `PACKAGE_SERVER` (or `package_server`) **env var**, then `packages.saucal.com`. Composite actions can't read the `vars` context, so to drive this from a repo/org variable, expose it as env in the workflow (`env: PACKAGE_SERVER: ${{ vars.PACKAGE_SERVER }}`). |
 | `username` | `''` | Auth username (SatisPress key). Empty ⇒ no-op. |
 | `password` | `''` | Auth password. Empty ⇒ defaults to the project's `homepage` (protocol stripped), the SatisPress convention. Pass explicitly for other repos. |
 | `path` | `.` | Project dir containing `composer.json`. auth.json is written here. |

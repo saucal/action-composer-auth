@@ -2,7 +2,7 @@ name: "Composer HTTP Basic Auth"
 description: "Configure composer http-basic auth for a private composer repository. Generic: SatisPress (packages.saucal.com) is just the default; call once per repo to authenticate others."
 inputs:
   domain:
-    description: "Repository domain to authenticate — the composer http-basic key. When empty, resolves from the `PACKAGE_SERVER` repo/org variable, then falls back to packages.saucal.com."
+    description: "Repository domain to authenticate — the composer http-basic key. When empty, resolves from the `PACKAGE_SERVER` (or `package_server`) environment variable, then falls back to packages.saucal.com. (composite actions can't read the `vars` context, so callers wanting an org/repo variable must expose it as env.)"
     required: false
     default: ''
   username:
@@ -25,8 +25,7 @@ runs:
       if: ${{ inputs.username != '' }}
       shell: bash
       env:
-        # domain: explicit input, else the PACKAGE_SERVER repo/org variable, else SatisPress.
-        DOMAIN: ${{ inputs.domain || vars.PACKAGE_SERVER || 'packages.saucal.com' }}
+        INPUT_DOMAIN: ${{ inputs.domain }}
         USERNAME: ${{ inputs.username }}
         PASSWORD: ${{ inputs.password }}
         AUTH_PATH: ${{ inputs.path }}
@@ -36,8 +35,11 @@ runs:
           echo "No composer.json in ${AUTH_PATH}; skipping composer auth."
           exit 0
         fi
-        # Final safety net: if the domain resolved empty (unset variable / no input), use SatisPress.
-        DOMAIN="${DOMAIN:-packages.saucal.com}"
+        # domain: explicit input, else the PACKAGE_SERVER env var (workflows map vars.PACKAGE_SERVER
+        # to it; the maintenance flow exposes `package_server`), else SatisPress. Resolved in bash —
+        # the `vars` context is not available inside composite actions.
+        DOMAIN="${INPUT_DOMAIN}"
+        [ -z "${DOMAIN}" ] && DOMAIN="${PACKAGE_SERVER:-${package_server:-packages.saucal.com}}"
         # Default the password to the project's homepage (protocol stripped) — the SatisPress
         # convention. Pass `password` explicitly to authenticate any other repo.
         PASS="${PASSWORD}"
