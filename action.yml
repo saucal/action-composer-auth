@@ -10,7 +10,7 @@ inputs:
     required: false
     default: ''
   password:
-    description: "Auth password. If empty, defaults to the project's composer.json `homepage` (protocol stripped) — the SatisPress convention. Pass explicitly for other repos."
+    description: "Auth password. If empty, defaults to the project's composer.json `homepage` (protocol stripped) — the SatisPress convention. Pass explicitly for other repos. If both are empty, auth is skipped with a warning."
     required: false
     default: ''
   path:
@@ -44,6 +44,10 @@ runs:
         PASS="${PASSWORD}"
         if [ -z "${PASS}" ]; then
           PASS="$( cd "${AUTH_PATH}" && composer config homepage | sed 's,http[s]\?://,,' )"
+        fi
+        if [ -z "${PASS}" ]; then
+          echo "::warning title=Composer auth skipped::No password for ${DOMAIN}: the 'password' input is empty and ${AUTH_PATH}/composer.json has no (or an empty) 'homepage'. Set one of them."
+          exit 0
         fi
         echo "Configuring composer auth for ${DOMAIN}"
         ( cd "${AUTH_PATH}" && composer config "http-basic.${DOMAIN}" "${USERNAME}" "${PASS}" )
